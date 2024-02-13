@@ -1,7 +1,60 @@
 <html>
 	<head>
+		<style>
+			.image-container {
+				display: flex; /* Use flexbox to arrange images horizontally */
+			}
+		</style>
 	</head>
 	<body>
-		Homework 1 index.html here
+		<h1>Task 1</h1>
+		<h3>To rasterize triangles, I do the following for each triangle:</h3>
+		<p>
+			1. I find the maximum and minimum x and y coordinates based on the 
+			three points of the triangle to build a bounding box. <br>
+			2. I iterate over every pixel in the bounding box. If the center of
+			the pixel is in the triangle, I color the pixel the triangle's color. <br>
+			3. To check whether or not a pixel is in the triangle, I compute if 
+			the center of the pixel is within all 3 half-spaces of the triangle. <br>
+			4. This requires checking the winding order of the points, which is 
+			done by computing the cross product. If the cross product is negative
+			then I flip the order of the points, guarenteeing that the points are
+			always in clockwise order. <br>
+		</p>
+		<h3>Algorithm</h3>
+		The algorithm is no worse than one that checks each sample within the
+		bounding box of the triangle because the algorithm does exactly that;
+		check each sample within the bounding box of the triangle.
+		<h3>PNG</h3>
+		<img src="task1.png"width="500" height="350">
+		<h1>Task 2</h1>
+		<h3>Supersampling Algorithm</h3>
+		<p> 
+			No new data structures were used. <br> <br>
+			To supersample, I rasterize triangles, points and lines to a higher
+			resolution (width * sqrt(sample_rate)), (height * sqrt(sample_rate)).
+			Each pixel at this higher resolution is saved to the sample_buffer,
+			which is now much larger than the framebuffer.
+			Once this is done, the sample_buffer is downsampled and then the
+			averaged pixels are drawn into the framebuffer.<br> <br>
+			The rasterization pipeline now has two stages; the first stage draws
+			a higher resolution image to the sample_buffer. The second stage
+			downsamples and draws the sample_buffer into the framebuffer. <br> <br>
+			Supersampling is useful because it removes jaggies and other image
+			artefacts. <br> <br> To antialias my triangles with supersampling, I 
+			convert from continuous space into the discrete sample_buffer, then
+			downsample from the sample_buffer to the framebuffer. This allows 
+			the triangle's shape to be captured much more accurately.
+		</p>
+		<h3>PNG</h3>
+		<div class="image-container">
+			<img src="task2_1sample.png"width="400" height="300">
+			<img src="task2_4sample.png"width="400" height="300">
+			<img src="task2_16sample.png"width="400" height="300">
+		</div>
+		These results are observed because the sharp/skinny edges of triangles are
+		very high frequency. By increasing the sampling rate we more accurately
+		capture the signal of this high frequency region. When we downsample, we 
+		do not keep the resolution but we do still keep the signal we capture.
 	</body>
 </html>
