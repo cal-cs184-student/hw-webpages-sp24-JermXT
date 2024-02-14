@@ -14,17 +14,17 @@
 	</head>
 	<body>
 		<h1>Task 1</h1>
-		<h3>To rasterize triangles, I do the following for each triangle:</h3>
+		<h3>To rasterize triangles, we do the following for each triangle:</h3>
 		<p>
-			1. I find the maximum and minimum x and y coordinates based on the 
+			1. We find the maximum and minimum x and y coordinates based on the 
 			three points of the triangle to build a bounding box. <br>
-			2. I iterate over every pixel in the bounding box. If the center of
-			the pixel is in the triangle, I color the pixel the triangle's color. <br>
-			3. To check whether or not a pixel is in the triangle, I compute if 
+			2. We iterate over every pixel in the bounding box. If the center of
+			the pixel is in the triangle, we color the pixel the triangle's color. <br>
+			3. To check whether or not a pixel is in the triangle, we compute if 
 			the center of the pixel is within all 3 half-spaces of the triangle. <br>
 			4. This requires checking the winding order of the points, which is 
 			done by computing the cross product. If the cross product is negative
-			then I flip the order of the points, guarenteeing that the points are
+			then we flip the order of the points, guarenteeing that the points are
 			always in clockwise order. <br>
 		</p>
 		<h3>Algorithm</h3>
@@ -37,7 +37,7 @@
 		<h3>Supersampling Algorithm</h3>
 		<p> 
 			No new data structures were used. <br> <br>
-			To supersample, I rasterize triangles, points and lines to a higher
+			To supersample, we rasterize triangles, points and lines to a higher
 			resolution (width * sqrt(sample_rate)), (height * sqrt(sample_rate)).
 			Each pixel at this higher resolution is saved to the sample_buffer,
 			which is now much larger than the framebuffer.
@@ -47,7 +47,7 @@
 			a higher resolution image to the sample_buffer. The second stage
 			downsamples and draws the sample_buffer into the framebuffer. <br> <br>
 			Supersampling is useful because it removes jaggies and other image
-			artefacts. <br> <br> To antialias my triangles with supersampling, I 
+			artefacts. <br> <br> To antialias my triangles with supersampling, we 
 			convert from continuous space into the discrete sample_buffer, then
 			downsample from the sample_buffer to the framebuffer. This allows 
 			the triangle's shape to be captured much more accurately.
@@ -68,9 +68,51 @@
 		<img src="task3.png"width="400" height="300">
 		<h1>Task 4</h1>
 		<p>
-			Explanation of barycentric coordinates, image to aid explanation.
+			Barycentric coordinates are a coordinate system that defines a point within
+			a triangle as a linear combination of the three verticies of a triangle.
+			Effectively, it describes the relative distance from a point
+			to the three vertices of the triangle; this can be interpreted as the 
+			"influence" or "effect" a vertex. This is very useful when trying to
+			interpolate a texture or color across the three verticies, as we know
+			how much "weight" to assign to each vertex to find the desired interpolated
+			color or texture.
 		</p>
+		<img src="barycentrix.png"width="300">
 		<h3>Image of Test 7</h3>
 		<img src="task4_test7.png"width="600">
+		<h1>Task 5</h1>
+		<h3>Pixel Sampling Explanation</h3>
+		<p>
+			To implement pixel sampling, we did the following for each triangle: <br>
+			We found the bounding box for each triangle, and then sampled each
+			pixel in the bounding box (at the appropriate sample_rate). If sample 
+			is within the triangle, we proceed. We then find the barycentric
+			coordinates of the point, and then transform it from the xy space to 
+			the uv space by using the alpha beta gamma coefficients derived from
+			the xy space and applied into the uv space. The given uv vectors are
+			in the range [0-1), so we must scale it to the texture width and height.
+			This gives us the texel coordinate from which we can get the texture color. 
+		</p>
+		<h3>Image of Test 7</h3>
+		<h1>Task 6</h1>
+		<p>
+			Level sampling helps select the appropriate resolution of 
+			the texture image to map onto the sample buffer, based on the
+			position of the sample in the rendered scene.
+		</p>
+		<p>
+			To implement level sampling, we did the following for each triangle: <br>
+			As with task 5, we proceed only if a sample is within a given triangle. 
+			We find the barycentric coordinates of the point (x, y) and also for 
+			neighboring screen samples -- (x+1, y) and (x, y+1). We use those
+			alpha, beta, and gamma coefficients to transform the present sample 
+			and its neighbors from the xy space into the uv space. We then 
+			initialize a SampleParams instance with those three transformed 
+			coordinates and pass it into the sample function.
+		</p>
+		<p>
+			We get the mipmap level by first using the three coordinates 
+			stored in our SampleParams.
+		</p>
 	</body>
 </html>
