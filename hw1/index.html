@@ -90,10 +90,30 @@
 			coordinates of the point, and then transform it from the xy space to 
 			the uv space by using the alpha beta gamma coefficients derived from
 			the xy space and applied into the uv space. The given uv vectors are
-			in the range [0-1), so we must scale it to the texture width and height.
+			in the range [0-1], so we must scale it to the texture width and height.
 			This gives us the texel coordinate from which we can get the texture color. 
+			Nearest pixel sampling rounds (nearest discrete x and y value) the scaled uv
+			coordinate to the closest texture sample location. Bilinear sampling, on
+			the other hand, takes the 4 nearest sample locations. It performs a 
+			horizontal linear interpolation of the top 2 coordinates and another 
+			horizontal linear interpolation of the bottom 2 coordinates, then a final 
+			vertical linear interpolation on the 2 interpolated color values.
+
 		</p>
-		<h3>Image of Test 7</h3>
+		<h3>nearest vs bilinear</h3>
+		Images are: nearest w/sample_rate=1, bilinear w/sample_rate=1, nearest w/sample_rate=16, bilinear w/sample_rate=16
+		<div class="image-container">
+			<img src="task6_nearest1.png"width="339" alt="nearest, sample_rate = 1">
+			<img src="task6_bilinear1.png"width="339"  alt="bilinear, sample_rate = 1">
+			<img src="task6_nearest16.png"width="339"  alt="nearest, sample_rate = 16">
+			<img src="task6_bilinear16.png"width="339"  alt="bilinear, sample_rate = 16">
+		</div>
+		In this example, the starkest difference occurs at a low supersample rate, where 
+		the nearest line is short and abrupt while the bilinear line is smoothed out. In 
+		the sample_rate=16 case, the differences are a lot smaller because we sample at
+		a frequency high enough (> Nyquist) to capture the high frequency change much 
+		more effectively, so bilinear vs nearest doesn't have as much of an impact on
+		image fidelity.
 		<h1>Task 6</h1>
 		<p>
 			Level sampling helps select the appropriate resolution of 
@@ -106,13 +126,43 @@
 			We find the barycentric coordinates of the point (x, y) and also for 
 			neighboring screen samples -- (x+1, y) and (x, y+1). We use those
 			alpha, beta, and gamma coefficients to transform the present sample 
-			and its neighbors from the xy space into the uv space. We then 
-			initialize a SampleParams instance with those three transformed 
-			coordinates and pass it into the sample function.
+			and its neighbors from the xy space into the uv space. 
 		</p>
 		<p>
-			We get the mipmap level by first using the three coordinates 
-			stored in our SampleParams.
+			We get the mipmap level by first using those three transformed coordinates
+			to calculate differentials in the texture 
+			space (du/dx, dv/dx, du/dy, dv/dy), evaluating the difference between
+			each of the transformed neighbor samples and the transformed (x, y) sample. We scale
+			those differentials which are in range [0, 1] to the width and height of 
+			the texture/highest-res mipmap level. Finally, we calculate mipmap level by finding the log (base 2) of the max
+			differential length. After calculating the mipmap level, we use the function "sample" to
+			either round to the nearest discrete level or compute a linear interpolation on the colors
+			mapped to the sample on both mipmap levels adjacent to the continuous value we have. 
+			In the rounding process for both cases, we clamp the levels to be between [0, max mipmap level].
+			The pixel sampling method is handled by the psmSample helper function and specified by psm.
 		</p>
+		<h3>Tradeoffs between adjusting sampling via pixel sampling, level sampling, or the number of samples per pixel:</h3>
+		<p>
+			Supersampling is by far the most powerful technique in terms of antialiasing, but is also
+			the most expensive in both speed and memory as every "upgrade" in super sampling is an 
+			exponential increase in algorithmic and memory complexity.
+			Level sampling is pretty fast; we simply compute colors twice, once for each D level. It
+			also only incurs 33% more memory (in the form of downsampled textures).
+			Pixel sampling requires the least resources in terms of memory; no extra memory is needed.
+			It is a little slower than level sampling as you need to lerp three times (vs 1) in order
+			to combine the four texel values in bilinear pixel sampling. 
+			Level sampling is more powerful than pixel sampling as it gets rid of high frequency signal
+			when the sampling rate is low. This is very good at getting rid of visual artefacts. Pixel 
+			sampling is not as powerful as it only samples from the four adjacent pixels, while level
+			sampling can work at a much larger scale.
+		</p>
+		<h3> PNGS </h3>
+		The images are: L_ZERO and P_NEAREST, L_ZERO and P_LINEAR, L_NEAREST and P_NEAREST, and L_NEAREST and P_LINEAR
+		<div class="image-container">
+			<img src="LZEROPNEAREST.png"width="339" alt="nearest, sample_rate = 1">
+			<img src="LZEROPLINEAR.png"width="339"  alt="bilinear, sample_rate = 1">
+			<img src="LNEARESTPNEAREST.png"width="339"  alt="nearest, sample_rate = 16">
+			<img src="LNEARESTPLINEAR.png"width="339"  alt="bilinear, sample_rate = 16">
+		</div>
 	</body>
 </html>
